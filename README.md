@@ -56,7 +56,7 @@ No. You are expected to use free-tier resources only and not generate any charge
 
 #### What will you be grading me on?
 
-Scripting skills, ellegance, understanding of the technologies you use, security, documentation.
+Scripting skills, elegance, understanding of the technologies you use, security, documentation.
 
 #### Will I have a chance to explain my choices?
 
