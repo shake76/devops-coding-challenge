@@ -14,7 +14,7 @@ You will need an AWS account. Create one if you don't own one already. You can u
 You are required to provision and deploy a new service in AWS. It must:
 
 * Be publicly accessible.
-* Run an web server, it can be an out of the box webserver (ie: Nginx, Apache) or any application acting as one.
+* Run a web server, it can be an out of the box webserver (ie: Nginx, Apache) or any application acting as one.
 * Deploy the content. This can be as simple as some static text representing a version number, for example:
 3.0.1
 or as complex as a full website. You choose. We will not provide the content.
@@ -25,7 +25,7 @@ Fork this repository.
 
 * Script your service using your configuration management and/or infrastructure-as-code tool of choice.
 * Provision the service in your AWS account.
-* Write a health check script that can be run externally
+* Write a health check script that can be run externally to periodically check that the service is up 
 * Alter the README to contain instructions required to:
   * Provision the service.
   * Run the health check script.
