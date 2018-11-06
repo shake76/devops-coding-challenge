@@ -14,7 +14,7 @@ You will need an AWS account. Create one if you don't own one already. You can u
 You are required to provision and deploy a new service in AWS. It must:
 
 * Be publicly accessible.
-* Run Nginx  or something to serve up content
+* Run a web server, it can be an out of the box webserver (ie: Nginx, Apache) or any application acting as one.
 * Deploy the content. This can be as simple as some static text representing a version number, for example:
 3.0.1
 or as complex as a full website. You choose. We will not provide the content.
@@ -25,14 +25,14 @@ Fork this repository.
 
 * Script your service using your configuration management and/or infrastructure-as-code tool of choice.
 * Provision the service in your AWS account.
-* Write a health check script that can be run externally to periodically 
+* Write a health check script that can be run externally to periodically check that the service is up 
 * Alter the README to contain instructions required to:
   * Provision the service.
   * Run the health check script.
 * Provide us IAM credentials to log in to the AWS account. If you have other resources in it make sure we can only access what is related to this test.
-*Document each step.
-*Make it easy to install
-*Make it Cloud provider agnostic - i.e. can we repeat this in Azure or Google Cloud Platform
+  * Document each step.
+  * Make it easy to install
+  * Make it as Cloud provider agnostic as you can - i.e. can we repeat this in Azure or Google Cloud Platform
 Once done, give us access to your fork. Feel free to ask questions as you go if anything is unclear, confusing, or just plain missing.
 
 # Extra Credit
