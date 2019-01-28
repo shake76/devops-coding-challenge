@@ -1,73 +1,197 @@
 DevOps Coding Test
 ==================
 
-# Goal
 
-Script the creation of a service, and a health check script to verify it is up and responding correctly.
 
-# Prerequisites
+![alt text](GeneralOverview.png "Diagram")
 
-You will need an AWS account. Create one if you don't own one already. You can use free-tier resources for this test.
+For this Test the Infrastructure provisioning was implemented with Terraform and Kubespray was used to configure kubernetes cluster in which we are going to deploy our kubernetes-bootcamp app
 
-# The Task
+Prerequisites:
 
-You are required to provision and deploy a new service in AWS. It must:
+Terraform (v0.11.10)
+aws-cli   (aws-cli/1.15.14 Python/2.7.15rc1 Linux/4.15.0-43-generic botocore/1.10.14)
+kubespray (https://github.com/kubernetes-incubator/kubespray)
+ansible   (ansible 2.7.6)
+python3   (to be able to run HEALTHCHECK SCRIPT)
 
-* Be publicly accessible.
-* Run a web server, it can be an out of the box webserver (ie: Nginx, Apache) or any application acting as one.
-* Deploy the content. This can be as simple as some static text representing a version number, for example:
-3.0.1
-or as complex as a full website. You choose. We will not provide the content.
+AWS SETUP Steps
 
-# Mandatory Work
+- Clone the following repo in your local directory:
 
-Fork this repository.
+```git clone https://github.com/shake76/devops-coding-challenge.git```
 
-* Script your service using your configuration management and/or infrastructure-as-code tool of choice.
-* Provision the service in your AWS account.
-* Write a health check script that can be run externally to periodically check that the service is up 
-* Alter the README to contain instructions required to:
-  * Provision the service.
-  * Run the health check script.
-* Provide us IAM credentials to log in to the AWS account. If you have other resources in it make sure we can only access what is related to this test.
-  * Document each step.
-  * Make it easy to install
-  * Make it as Cloud provider agnostic as you can - i.e. can we repeat this in Azure or Google Cloud Platform
-Once done, give us access to your fork. Feel free to ask questions as you go if anything is unclear, confusing, or just plain missing.
+- Inside devops-coding-challengue/terraform directory run the following commands
 
-# Extra Credit
+```terraform init``` (Initialize the working directory containing Terraform configuration files) after it finished then run
+```terraform plan``` (Show us the aws resources that are going to be created), if everithing looks good in terraform plan output we are ready to run ```terraform apply``` (it is going to create our infraestructure in AWS)
 
-We know time is precious, we won't mark you down for not doing the extra credits, but if you want to give them a go...
+Note: One of the tf files inside terraform directory is sshcfg.tf, this resources is going to generate our ssh.cfg file that we are going to use later to connect to our instances.
 
-* Run the service inside a Docker container.
-* Make it highly available.
-* We value Terraform and rely on it heavily. If you already know TF, we’d love to see you use it.
 
-# Questions
+KUBERNETES CLUSTER SETUP Steps
 
-#### What scripting languages can I use?
+- Inside devops-coding-challengue/kubespray directory check the python dependencies
 
-Anyone you like. You’ll have to justify your decision. We use CloudFormation, Puppet and Python internally. Please pick something you're familiar with, as you'll need to be able to discuss it.
+```pip3 install -r requirements.txt```
 
-#### Will I have to pay for the AWS charges?
+- Create an inventory/inventory.cfg file (here below you have the current one used for this test):
 
-No. You are expected to use free-tier resources only and not generate any charges. Please remember to delete your resources once the review process is over so you are not charged by AWS.
+```[all]
+ip-10-43-0-X.us-east-1.computer.internal ansible_host=PUBLIC_IP ip=10.43.0.X ansible_user=ubuntu ansible_python_interpreter=/usr/bin/python3
+ip-10-43-0-X.us-east-1.computer.internal ansible_host=PUBLIC_IP ip=10.43.0.X ansible_user=ubuntu ansible_python_interpreter=/usr/bin/python3
+ip-10-43-0-X.us-east-1.computer.internal ansible_host=PUBLIC_IP ip=10.43.0.X ansible_user=ubuntu ansible_python_interpreter=/usr/bin/python3
+ip-10-43-0-X.us-east-1.computer.internal ansible_host=PUBLIC_IP ip=10.43.0.X ansible_user=ubuntu ansible_python_interpreter=/usr/bin/python3
 
-#### What will you be grading me on?
+[kube-master]
+ip-10-43-0-X.us-east-1.computer.internal
 
-Scripting skills, security, elegance, understanding of the technologies you use, documentation.
+[kube-node]
+ip-10-43-0-X.us-east-1.computer.internal
+ip-10-43-0-X.us-east-1.computer.internal
 
-#### What will you not take into account?
+[etcd]
+ip-10-43-0-X.us-east-1.computer.internal
 
-Brevity. We know there are very simple ways of solving this exercise, but we need to see your skills. We will not be able to evaluate you if you provide five lines of code.
+[k8s-cluster:children]
+kube-node
+kube-master```
 
-#### Will I have a chance to explain my choices?
+Note: you can take the PUBLIC_IP address from devops-coding-challengue/ssh.cfg file previously genereated with terraform
 
-If we proceed to a technical interview, we’ll be asking questions about why you made the choices you made. Comments in the code are also very helpful.
+- Run the following command to provision your servers
 
-#### Why doesn't the test include X?
+```ansible-playbook -i inventory/inventory.cfg -b -v cluster.yml```
 
-Good question. Feel free to tell us how to make the test better. Or, you know, fork it and improve it!
+- After provision is successful you can login to the master instance and check if nodes are connected correctly
 
-#### How long should this take?
-There are many ways to solve this problem so it may vary for each candidate and depends how far you want to take it but we are confident the basic requirements can be met with 2-3 hours work.
+```kubectl get nodes``` (the output expected is the following)
+
+NAME                                        STATUS   ROLES    AGE   VERSION
+ip-10-43-0-x.us-east-1.computer.internal   Ready    master   30h   v1.13.2
+ip-10-43-0-x.us-east-1.computer.internal   Ready    node     29h   v1.13.2
+ip-10-43-0-x.us-east-1.computer.internal   Ready    node     29h   v1.13.2
+
+DEPLOY APP
+
+-Deploying kubernetes-bootcamp app in kubernetes-cluster, create the following template.yml file that also contain the service
+
+```# template.yml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kubernetes-bootcamp
+  labels:
+    app: kubernetes-bootcamp
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: kubernetes-bootcamp
+  template:
+    metadata:
+      labels:
+        app: kubernetes-bootcamp
+    spec:
+      containers:
+      - name: kubernetes-bootcamp
+        image: gcr.io/google-samples/kubernetes-bootcamp:v1
+        ports:
+        - containerPort: 8080
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kubernetes-bootcamp
+spec:
+  selector:
+    app: kubernetes-bootcamp
+  type: NodePort
+  ports:
+  - port: 80
+    targetPort: 8080
+    nodePort: 30206
+    protocol: TCP```
+
+- Once our template is created we are ready to run the following command to create our deployment and service:
+
+```kubectl create -f template.yml``` then we are ready to check if the pods are running correctly ```kubectl get pods``` (the output expected is the following)
+
+NAME                                   READY   STATUS    RESTARTS   AGE
+kubernetes-bootcamp-865f4c5f68-7rjfv   1/1     Running   0          22h
+kubernetes-bootcamp-865f4c5f68-g5s2k   1/1     Running   0          22h
+
+
+- Finally we are going to check if our app deployed is up and running
+
+``` curl -v http://kubernetes-412530889.us-east-1.elb.amazonaws.com:30206``` you can check it out from the browser if needed
+
+RUN HEALTHCHECK SCRIPT (it is in order to monitoring the endpoint status)
+
+```python3.6 healthcheck.py```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
