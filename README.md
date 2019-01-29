@@ -80,10 +80,10 @@ ip-10-43-0-x.us-east-1.computer.internal   Ready    node     29h   v1.13.2
 
 # DEPLOY APP
 
-- Deploying kubernetes-bootcamp app in kubernetes-cluster, create the following template.yml file that also contain the service
+- Deploying kubernetes-bootcamp app in kubernetes-cluster, create the following deployment.yml file that also contain the service
 
 ```
-# template.yml
+# deployment.yml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -122,23 +122,37 @@ spec:
     protocol: TCP
 ```
 
-- Once our template is created we are ready to run the following command to create our deployment and service:
+- Run the script.py that provide to us 3 Options (Get status of the POD, RUN a Deploy, Update a Deploy)
 
-```kubectl create -f template.yml``` 
+Important: before use that script we need to be safe that we have files "deployment.yml" and "update.yml" under directory devops-coding-challengue
+
+```python3.6 script.py```
+
+Please select option 2 
+
+
 then we are ready to check if the pods are running correctly 
-```kubectl get pods``` 
-(the output expected is the following)
 
+```python3.6 script.py```
+
+Please select option 1 
+
+(the output expected is the following)
+```
 NAME                                   READY   STATUS    RESTARTS   AGE
 kubernetes-bootcamp-865f4c5f68-7rjfv   1/1     Running   0          22h
 kubernetes-bootcamp-865f4c5f68-g5s2k   1/1     Running   0          22h
-
+```
 
 - Finally we are going to check if our app deployed is up and running
 
-``` curl -v http://kubernetes-412530889.us-east-1.elb.amazonaws.com:30206``` you can check it out from the browser if needed
+``` curl -v http://kubernetes-412530889.us-east-1.elb.amazonaws.com:30206``` 
 
-# RUN HEALTHCHECK SCRIPT (it is in order to monitoring the endpoint status)
+Note: You can check it out from the browser if needed
+
+# RUN HEALTHCHECK SCRIPT
+
+The following python script check for the status of our endpoint
 
 ```python3.6 healthcheck.py```
 
